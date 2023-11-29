@@ -40,6 +40,24 @@ exports.login = catchAsync(async (req, res, next) => {
   res.status(200).json({ status: 'success', token });
 });
 
-exports.protect = catchAsync((req, res, next) => {
+exports.protect = catchAsync(async (req, res, next) => {
+  //  Get the token
+  let token = '';
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ').at(1);
+  }
+  console.log(token);
+  //Verification token
+  if (!token) {
+    return next(
+      createAppError('You are not logged in! Please log in to get access.', 401)
+    );
+  }
+  //Check if user still exists
+
+  //Check if user changed PWD after the JWT was issued
   next();
 });

@@ -1,0 +1,24 @@
+exports.createAppError = function (message, statusCode) {
+  const error = new Error(message);
+
+  error.statusCode = statusCode;
+  error.status = String(statusCode).startsWith('4') ? 'fail' : 'error';
+  error.isOperational = true;
+
+  Error.captureStackTrace(this, this.constructor);
+
+  return error;
+};
+
+// class AppError extends Error {
+//   constructor(message, statusCode) {
+//     super(message);
+//
+//     this.statusCode = statusCode;
+//     this.status = String(statusCode).startsWith('4') ? 'fail' : 'error';
+//     this.isOperational = true;
+//
+//     Error.captureStackTrace(this, this.constructor);
+//   }
+// }
+// module.exports = { AppError };

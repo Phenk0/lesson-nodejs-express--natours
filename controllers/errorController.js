@@ -38,6 +38,13 @@ exports.globalErrorHandler = (err, req, res, next) => {
     if (err.name === 'ValidationError')
       error = createAppError(err.message, 400);
 
+    //error handling for invalid user token-id
+    if (err.name === 'JsonWebTokenError')
+      error = createAppError('Invalid token. Please log in again!', 401);
+    //error handling for expired user token-id
+    if (err.name === 'TokenExpiredError')
+      error = createAppError('Token is expired. Please log in again!', 401);
+
     res.status(error.statusCode).json({
       status: error.status,
       message: error.message

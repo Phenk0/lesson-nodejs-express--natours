@@ -33,7 +33,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
     Tour,
     req.query,
     '-ratingsAverage -ratingsQuantity'
-  );
+  ).populate('reviewsQuantity');
 
   //SEND RESPONSE
   res.status(200).json({
@@ -43,11 +43,18 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
   });
 });
 exports.getTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findById(req.params.id);
-  // .populate({
-  // path: 'guides',
-  // select: '-__v -passwordChangedAt'
-  // });
+  const tour = await Tour.findById(req.params.id).populate(
+    'reviews',
+    '-__v -tour'
+  );
+
+  //functionality of <populate> moved to tourModel->tourSchema->preMiddleware
+  /*
+  .populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt'
+    });
+  */
   // Tour.findOne({ _id: req.params.id });
 
   if (!tour) return next(createAppError('No such tour found to show', 404));

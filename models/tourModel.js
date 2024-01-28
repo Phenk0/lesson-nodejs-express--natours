@@ -68,17 +68,15 @@ const tourSchema = new mongoose.Schema(
       address: { type: String },
       description: { type: String }
     },
-    locations: {
-      type: [
-        {
-          type: { type: String, default: 'Point', enum: ['Point'] },
-          coordinates: { type: [Number] },
-          address: { type: String },
-          description: { type: String },
-          day: { type: Number }
-        }
-      ]
-    },
+    locations: [
+      {
+        type: { type: String, default: 'Point', enum: ['Point'] },
+        coordinates: { type: [Number] },
+        address: { type: String },
+        description: { type: String },
+        day: { type: Number }
+      }
+    ],
     guides: [
       {
         type: mongoose.Schema.ObjectId,
@@ -91,6 +89,21 @@ const tourSchema = new mongoose.Schema(
 
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
+});
+
+//virtual schema for populate(aka fill) --Doesn't work if query is not populated ->tourController->getTour
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'tour',
+  justOne: false
+});
+
+tourSchema.virtual('reviewsQuantity', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'tour',
+  count: true
 });
 
 tourSchema.pre('save', function (next) {
@@ -117,10 +130,7 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 tourSchema.pre(/^find/, function (next) {
-  this.populate({
-    path: 'guides',
-    select: '-__v -passwordChangedAt'
-  });
+  this.populate('guides', '-__v -passwordChangedAt');
   next();
 });
 
@@ -136,6 +146,4 @@ tourSchema.pre('aggregate', function (next) {
   next();
 });
 
-const Tour = mongoose.model('Tour', tourSchema);
-
-module.exports = Tour;
+module.exports = mongoose.model('Tour', tourSchema);

@@ -1,8 +1,12 @@
 const Tour = require('../models/tourModel');
-const { processQuery } = require('../utils/apiFeatures');
-const { createAppError } = require('../utils/appError');
 const { catchAsync } = require('../utils/catchAsync');
-const { deleteOne, updateOne, createOne } = require('./handlerFactory');
+const {
+  deleteOne,
+  updateOne,
+  createOne,
+  getOne,
+  getAll
+} = require('./handlerFactory');
 
 //MIDDLEWARE FUNC
 exports.aliasTopTours = (req, res, next) => {
@@ -14,57 +18,12 @@ exports.aliasTopTours = (req, res, next) => {
 };
 
 //FEATURES
-exports.getAllTours = catchAsync(async (req, res, next) => {
-  //CLASS VARIATION
-  // const features = new APIFeatures(Tour, req.query)
-  //   .filter()
-  //   .sort()
-  //   .limitFields()
-  //   .paginate();
-  // const tours = await features.query;
-  //
-  // const query = Tour.find()
-  //   .where('duration')
-  //   .equals(5)
-  //   .where('difficulty')
-  //   .equals('easy');
-
-  //EXECUTE QUERY
-  const tours = await processQuery(
-    Tour,
-    req.query,
-    '-ratingsAverage -ratingsQuantity'
-  ).populate('reviewsQuantity');
-
-  //SEND RESPONSE
-  res.status(200).json({
-    status: 'success',
-    results: tours.length,
-    data: { tours }
-  });
-});
-exports.getTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findById(req.params.id).populate(
-    'reviews',
-    '-__v -tour'
-  );
-
-  //functionality of <populate> moved to tourModel->tourSchema->preMiddleware
-  /*
-  .populate({
-    path: 'guides',
-    select: '-__v -passwordChangedAt'
-    });
-  */
-  // Tour.findOne({ _id: req.params.id });
-
-  if (!tour) return next(createAppError('No such tour found to show', 404));
-
-  res.status(200).json({ status: 'success', data: { tour } });
-});
+exports.getAllTours = getAll(Tour, { path: 'reviewsQuantity' });
+exports.getTour = getOne(Tour, { path: 'reviews', select: '-__v -tour' });
 exports.createTour = createOne(Tour);
 exports.updateTour = updateOne(Tour);
 exports.deleteTour = deleteOne(Tour);
+
 exports.getTourStats = catchAsync(async (req, res, next) => {
   const stats = await Tour.aggregate([
     { $match: { ratingsAverage: { $gte: 4.5 } } },

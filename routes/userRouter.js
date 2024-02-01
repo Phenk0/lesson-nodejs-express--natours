@@ -5,7 +5,8 @@ const {
   updateUser,
   deleteUser,
   updateMe,
-  deleteMe
+  deleteMe,
+  getMe
 } = require('../controllers/userController');
 const {
   signup,
@@ -21,18 +22,22 @@ const router = Router();
 
 router.post('/signup', signup);
 router.post('/login', login);
-
 router.post('/forgotPassword', forgotPassword);
 router.patch('/resetPassword/:token', resetPassword);
-router.patch('/updateMyPassword', protect, updatePassword);
-router.patch('/updateMe', protect, updateMe);
-router.delete('/deleteMe', protect, deleteMe);
+
+//protecting all the routes that are below
+router.use(protect);
+
+router.patch('/updateMyPassword', updatePassword);
+
+router.get('/me', getMe, getUser);
+router.patch('/updateMe', updateMe);
+router.delete('/deleteMe', deleteMe);
+
+//restricting all the routes that are below to 'admin'
+router.use(restrictTo('admin'));
 
 router.route('/').get(getAllUsers);
-router
-  .route('/:id')
-  .get(getUser)
-  .patch(protect, restrictTo('admin'), updateUser)
-  .delete(protect, restrictTo('admin'), deleteUser);
+router.route('/:id').get(getUser).patch(updateUser).delete(deleteUser);
 
 module.exports = router;

@@ -28,6 +28,7 @@ exports.getAll = (Model, populateOptions) =>
       req.query,
       '-ratingsAverage -ratingsQuantity'
     ).populate(populateOptions);
+    // .explain();
 
     //SEND RESPONSE
     res.status(200).json({

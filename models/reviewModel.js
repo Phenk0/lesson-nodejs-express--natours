@@ -6,7 +6,7 @@ const reviewModel = new mongoose.Schema(
       type: String,
       trim: true,
       required: [true, 'Review can not be empty.'],
-      maxLength: [150, 'A review must have less or equal then 150 characters'],
+      maxLength: [200, 'A review must have less or equal then 150 characters'],
       minLength: [5, 'A review must have more or equal then 5 characters']
     },
     rating: {
@@ -32,7 +32,7 @@ const reviewModel = new mongoose.Schema(
 );
 
 reviewModel.pre(/^find/, function (next) {
-  this.populate({ path: 'user tour', select: 'name photo' });
+  this.populate({ path: 'user', select: 'name photo' });
   next();
 });
 

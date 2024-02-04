@@ -112,3 +112,42 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
     data: { data: tours }
   });
 });
+
+exports.getDistances = catchAsync(async (req, res, next) => {
+  const { latlng, unit } = req.params;
+
+  const [lat, lng] = latlng.split(',');
+  const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
+
+  if (!lat || !lng) {
+    next(
+      createAppError(
+        'Please provide latitude longitude in the format lat,lng',
+        400
+      )
+    );
+  }
+  const distances = await Tour.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [Number(lng), Number(lat)]
+        },
+        distanceField: 'distance',
+        distanceMultiplier: multiplier
+      }
+    },
+    {
+      $project: {
+        distance: 1,
+        name: 1
+      }
+    }
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    data: { data: distances }
+  });
+});

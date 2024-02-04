@@ -7,6 +7,7 @@ const {
   getOne,
   getAll
 } = require('./handlerFactory');
+const { createAppError } = require('../utils/appError');
 
 //MIDDLEWARE FUNC
 exports.aliasTopTours = (req, res, next) => {
@@ -19,7 +20,7 @@ exports.aliasTopTours = (req, res, next) => {
 
 //FEATURES
 exports.getAllTours = getAll(Tour, { path: 'reviewsQuantity' });
-exports.getTour = getOne(Tour, { path: 'reviews', select: '-__v -tour' });
+exports.getTour = getOne(Tour, { path: 'reviews', select: '-__v' });
 exports.createTour = createOne(Tour);
 exports.updateTour = updateOne(Tour);
 exports.deleteTour = deleteOne(Tour);
@@ -82,4 +83,32 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
   res
     .status(200)
     .json({ status: 'success', data: { plan }, results: plan.length });
+});
+
+// /tours-within/:distance/center/:latlng/unit/:unit
+// /tours-within/:233/center/:34,18/unit/:mi
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+
+  const radius = distance / (unit === 'mi' ? 3963.2 : 6378.1);
+
+  if (!lat || !lng) {
+    next(
+      createAppError(
+        'Please provide latitude and longitude in the format lat,lng',
+        400
+      )
+    );
+  }
+
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } }
+  });
+
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: { data: tours }
+  });
 });

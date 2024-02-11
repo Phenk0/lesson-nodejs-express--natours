@@ -10,6 +10,7 @@ lerna-debug.log*
 # temporary
 config.env
 dev-data
+.parcel-cache
 
 node_modules
 dist

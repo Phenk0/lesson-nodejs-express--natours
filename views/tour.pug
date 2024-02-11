@@ -1,6 +1,9 @@
 extends base
 include _reviewCard
 
+block append head
+  script(src='https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js')
+  link(href='https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css' rel='stylesheet')
 
 mixin overviewBox(label,text,icon)
   .overview-box__detail
@@ -45,10 +48,10 @@ block content
             .overview-box__detail
               img.overview-box__img(src=`/img/users/${guide.photo}`, alt=`${guide.name}`)
 
-              - if (guide.role==='lead-guide')
-                span.overview-box__label Lead guide
-              - if (guide.role==='guide')
-                span.overview-box__label Tour guide
+              - if (guide.role==='lead-guide');
+              span.overview-box__label Lead guide
+              - if (guide.role==='guide');
+              span.overview-box__label Tour guide
               span.overview-box__text= guide.name
 
     .description-box
@@ -60,10 +63,10 @@ block content
   section.section-pictures
     each image, index in tour.images
       .picture-box
-        img.picture-box__img(src=`/img/tours/${image}`, alt=`The Park Camper Tour ${index+1}`, class=`picture-box__img--${index+1}`)
+        img.picture-box__img(src=`/img/tours/${image}`, alt=`The Park Camper Tour ${index + 1}`, class=`picture-box__img--${index + 1}`)
 
   section.section-map
-    #map
+    #map(data-locations=`${JSON.stringify(tour.locations)}`)
 
   section.section-reviews
     .reviews
@@ -80,3 +83,5 @@ block content
         h2.heading-secondary What are you waiting for?
         p.cta__text #{tour.duration} days. 1 adventure. Infinite memories. Make it yours today!
         button.btn.btn--green.span-all-rows Book tour now!
+
+  //script(src='/js/mapbox.js')

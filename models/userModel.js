@@ -90,7 +90,6 @@ userSchema.pre(/^find/i, function (next) {
 
 userSchema.methods.correctPassword = async (candidatePassword, userPassword) =>
   await compare(candidatePassword, userPassword);
-
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(

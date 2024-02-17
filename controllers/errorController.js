@@ -5,19 +5,37 @@ exports.globalErrorHandler = (err, req, res, next) => {
   err.status = err.status || 'error';
 
   if (process.env.NODE_ENV === 'development') {
-    //give rich info
-    res.status(err.statusCode).json({
-      error: err,
-      status: err.status,
-      message: err.message,
-      stack: err.stack
-    });
+    // API
+    if (req.originalUrl.startsWith('/api')) {
+      //give rich info
+      res.status(err.statusCode).json({
+        error: err,
+        status: err.status,
+        message: err.message,
+        stack: err.stack
+      });
+    } else {
+      // RENDERED WEBSITE
+      res.status(err.statusCode).render('error', {
+        title: 'Something go wrong',
+        msg: err.message
+      });
+    }
   } else if (process.env.NODE_ENV === 'production' && err.isOperational) {
     //give predicted(operational) error info
-    res.status(err.statusCode).json({
-      status: err.status,
-      message: err.message
-    });
+    if (req.originalUrl.startsWith('/api')) {
+      // API
+      res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message
+      });
+    } else {
+      // RENDERED WEBSITE
+      res.status(err.statusCode).render('error', {
+        title: 'Something go wrong',
+        msg: err.message
+      });
+    }
   } else if (process.env.NODE_ENV === 'production' && !err.isOperational) {
     // Unhandled error that can leak unexpected details +marker for programmer
     let error = { ...err };
@@ -44,15 +62,15 @@ exports.globalErrorHandler = (err, req, res, next) => {
     //error handling for expired user token-id
     if (err.name === 'TokenExpiredError')
       error = createAppError('Token is expired. Please log in again!', 401);
-
-    res.status(error.statusCode).json({
-      status: error.status,
-      message: error.message
+    res.status(error.statusCode).render('error', {
+      title: 'Something go wrong',
+      msg: 'Please try again later!'
     });
   } else {
     console.error('ERROR 💥');
-    res
-      .status(500)
-      .json({ status: 'error', message: 'Something went very wrong' });
+    res.status(err.statusCode).render('error', {
+      title: 'Something go wrong',
+      msg: 'Please try again later!'
+    });
   }
 };

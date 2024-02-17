@@ -2,17 +2,22 @@ const { Router } = require('express');
 const {
   getOverview,
   getTour,
-  getLoginForm
+  getLoginForm,
+  getAccount,
+  updateUserData
 } = require('../controllers/viewController');
-const { isLoggedIn } = require('../controllers/authController');
+const { isLoggedIn, protect } = require('../controllers/authController');
 
 const router = Router();
 
 //Protect middleware
-router.use(isLoggedIn);
+// router.use(isLoggedIn);
 
-router.get('/', getOverview);
-router.get('/tours/:slug', getTour);
-router.get('/login', getLoginForm);
+router.get('/', isLoggedIn, getOverview);
+router.get('/tours/:slug', isLoggedIn, getTour);
+router.get('/login', isLoggedIn, getLoginForm);
+router.get('/me', protect, getAccount);
+
+// router.post('/submit-user-data', protect, updateUserData);
 
 module.exports = router;

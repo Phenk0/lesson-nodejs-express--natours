@@ -55,12 +55,22 @@ exports.login = catchAsync(async (req, res, next) => {
   }
   const user = await User.findOne({ email }).select('+password');
   // const isCorrectPwd = await user?.correctPassword(password, user.password);
-
+  const isCorrect = await user.correctPassword(password, user.password);
+  console.log(isCorrect);
+  console.log(password, user.password);
   if (!user || !(await user.correctPassword(password, user.password)))
     return next(createAppError('Incorrect email or password', 401));
 
   createSendToken({ _id: user._id }, 200, res);
 });
+
+exports.logout = (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true
+  });
+  res.status(200).json({ status: 'success' });
+};
 
 exports.protect = catchAsync(async (req, res, next) => {
   //  Get the token
@@ -101,30 +111,36 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   //Access to protected route is granted
   req.user = currentUser;
+  res.locals.user = currentUser;
   next();
 });
 
 // Only for rendered pages, no errors
-exports.isLoggedIn = catchAsync(async (req, res, next) => {
+exports.isLoggedIn = async (req, res, next) => {
   if (req.cookies.jwt) {
-    //Verification token
-    const decoded = await promisify(jwt.verify)(
-      req.cookies.jwt,
-      process.env.JWT_SECRET
-    );
-    //Check if user still exists
-    const currentUser = await User.findById(decoded.id);
-    if (!currentUser) return next();
+    try {
+      //Verification token
 
-    //Check if user changed PWD after the JWT was issued
-    if (currentUser.changedPasswordAfter(decoded.iat)) return next();
+      const decoded = await promisify(jwt.verify)(
+        req.cookies.jwt,
+        process.env.JWT_SECRET
+      );
+      //Check if user still exists
+      const currentUser = await User.findById(decoded.id);
+      if (!currentUser) return next();
 
-    //There is a logged-in user
-    res.locals.user = currentUser;
-    return next();
+      //Check if user changed PWD after the JWT was issued
+      if (currentUser.changedPasswordAfter(decoded.iat)) return next();
+
+      //There is a logged-in user
+      res.locals.user = currentUser;
+      return next();
+    } catch (err) {
+      return next();
+    }
   }
   next();
-});
+};
 //restricts actions for everyone besides: roles[]
 exports.restrictTo =
   (...roles) =>

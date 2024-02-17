@@ -51,7 +51,7 @@ const userSchema = new mongoose.Schema(
       ]
     },
     passwordChangedAt: { type: Date },
-    photo: { type: String },
+    photo: { type: String, default: 'default.jpg' },
     role: {
       type: String,
       enum: ['user', 'guide', 'lead-guide', 'admin'],
@@ -88,8 +88,13 @@ userSchema.pre(/^find/i, function (next) {
   next();
 });
 
-userSchema.methods.correctPassword = async (candidatePassword, userPassword) =>
-  await compare(candidatePassword, userPassword);
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword
+) {
+  return await compare(candidatePassword, userPassword);
+};
+
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(

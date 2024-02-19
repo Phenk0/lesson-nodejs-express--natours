@@ -6,14 +6,15 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cookieParser = require('cookie-parser');
 
 const { createAppError } = require('./utils/appError');
 const { globalErrorHandler } = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRouter');
 const userRouter = require('./routes/userRouter');
 const reviewsRouter = require('./routes/reviewRouter');
+const bookingRouter = require('./routes/bookingRouter');
 const viewRouter = require('./routes/viewRouter');
-const cookieParser = require('cookie-parser');
 
 const app = express();
 
@@ -75,6 +76,7 @@ app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewsRouter);
+app.use('/api/v1/bookings', bookingRouter);
 
 app.all('*', (req, res, next) => {
   next(createAppError(`Can't find ${req.originalUrl} on this server!`, 404));

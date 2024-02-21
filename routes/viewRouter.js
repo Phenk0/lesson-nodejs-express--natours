@@ -4,20 +4,23 @@ const {
   getTour,
   getLoginForm,
   getAccount,
-  updateUserData
+  updateUserData,
+  getMyTours
 } = require('../controllers/viewController');
 const { isLoggedIn, protect } = require('../controllers/authController');
+const { createBookingCheckout } = require('../controllers/bookingController');
 
 const router = Router();
 
 //Protect middleware
 // router.use(isLoggedIn);
 
-router.get('/', isLoggedIn, getOverview);
+router.get('/', createBookingCheckout, isLoggedIn, getOverview);
 router.get('/tours/:slug', isLoggedIn, getTour);
 router.get('/login', isLoggedIn, getLoginForm);
 router.get('/me', protect, getAccount);
+router.get('/my-tours', protect, getMyTours);
 
-// router.post('/submit-user-data', protect, updateUserData);
+router.post('/submit-user-data', protect, updateUserData);
 
 module.exports = router;

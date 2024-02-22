@@ -11,6 +11,7 @@ lerna-debug.log*
 config.env
 dev-data
 .parcel-cache
+.cache
 
 node_modules
 dist

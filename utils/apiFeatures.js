@@ -13,7 +13,6 @@ exports.processQuery = function (modelRaw, queryRaw, defaultSortBy = '') {
       (match) => `$${match}`
     )
   );
-  // console.log(queryEdited);
   let query = modelRaw.find(queryEdited);
 
   //SORTING
